@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // الأدمن الأساسيون: ثابتون هنا ولا يمكن حذفهم من صفحة الأدمن
+    function isOwner() {
+      return request.auth.token.email in ["logistipost@gmail.com"];
+    }
+
+    // الأدمن: مسجّل دخول بإيميل موثّق (تسجيل الدخول بـ Google يوثّقه تلقائياً)،
+    // وإيميله من الأساسيين أو مضاف في مجموعة admins
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && (isOwner() || exists(/databases/$(database)/documents/admins/$(request.auth.token.email)));
+    }
+
+    // فحص بسيط لشكل بيانات المتجر قبل الحفظ
+    function validStore() {
+      let d = request.resource.data;
+      return d.name is string && d.name.size() > 0 && d.name.size() <= 60
+        && (!('fields' in d) || (d.fields is list && d.fields.size() <= 40))
+        && (!('notes' in d) || (d.notes is list && d.notes.size() <= 20));
+    }
+
+    // المشرفون الإضافيون: رقم المستند = الإيميل. الأدمن فقط يقرأ ويضيف ويحذف
+    match /admins/{email} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && email == email.lower()
+        && email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
+        && request.resource.data.keys().hasOnly(['addedBy', 'addedAt']);
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // المتاجر (عناوين الشحن): قراءة للجميع، والتعديل للأدمن فقط
+    match /stores/{storeId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validStore();
+      allow delete: if isAdmin();
+    }
+
+    // الطلبات: مسموح جلب طلب واحد برقم التتبع فقط
+    // ممنوع عرض قائمة الطلبات، وممنوع الكتابة من الموقع
+    match /orders/{orderId} {
+      allow get: if true;
+      allow list: if false;
+      allow write: if false;
+    }
+
+    // أي مجموعة أخرى: ممنوعة بالكامل
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

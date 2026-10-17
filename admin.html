@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>A Logistics | لوحة الأدمن</title>
+  <!-- نطبّق الوضع المحفوظ قبل رسم الصفحة (صفحة الأدمن بالعربي دائماً) -->
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem("theme"); } catch (e) {}
+      if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = t;
+    })();
+  </script>
+  <link rel="icon" href="images/logo.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <nav class="container">
+      <a href="index.html" class="brand"><img src="images/logo.png" alt="A Logistics" /></a>
+      <div class="nav-end">
+        <span id="admin-user" class="admin-user hidden"></span>
+        <button id="logout-btn" class="btn btn-ghost hidden" type="button">تسجيل الخروج</button>
+        <button id="theme-toggle" class="icon-btn" type="button" aria-label="الوضع الليلي">
+          <svg class="icon moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container admin-main">
+
+    <!-- التحميل -->
+    <section id="view-loading" class="spinner-wrap"><div class="spinner"></div></section>
+
+    <!-- Firebase غير مربوط -->
+    <section id="view-config" class="order-card hidden">
+      <div class="message">
+        <div class="emoji">⚙️</div>
+        <h3>Firebase غير مربوط بعد</h3>
+        <p>الصق إعدادات مشروعك في ملف <code>js/firebase-config.js</code> ثم أعد تحميل الصفحة.</p>
+      </div>
+    </section>
+
+    <!-- تسجيل الدخول -->
+    <section id="view-login" class="order-card admin-login hidden">
+      <div class="message">
+        <div class="emoji">🔐</div>
+        <h3>لوحة الأدمن</h3>
+        <p>هذه الصفحة خاصة بإدارة الموقع. سجّل الدخول بحساب Google الخاص بالموقع.</p>
+        <button id="login-btn" class="btn btn-orange" type="button" style="margin-top:16px">تسجيل الدخول بحساب Google</button>
+        <p id="login-error" class="admin-error hidden"></p>
+      </div>
+    </section>
+
+    <!-- حساب غير مصرّح -->
+    <section id="view-denied" class="order-card hidden">
+      <div class="message error">
+        <div class="emoji">⛔</div>
+        <h3>ليس لديك صلاحية</h3>
+        <p>الحساب <strong id="denied-email" class="ltr-inline"></strong> غير مصرّح له بإدارة الموقع.</p>
+        <button id="denied-logout" class="btn btn-ghost" type="button" style="margin-top:16px">تسجيل الخروج</button>
+      </div>
+    </section>
+
+    <!-- لوحة التحكم -->
+    <section id="view-dashboard" class="hidden">
+      <div class="admin-toolbar">
+        <div>
+          <h1>عناوين الشحن</h1>
+          <p id="stores-count" class="admin-muted"></p>
+        </div>
+        <div class="admin-actions">
+          <button id="admins-btn" class="btn btn-ghost" type="button">👥 المشرفين</button>
+          <button id="import-btn" class="btn btn-ghost hidden" type="button">استيراد المتاجر الافتراضية</button>
+          <button id="add-btn" class="btn btn-orange" type="button">+ إضافة متجر</button>
+        </div>
+      </div>
+      <div id="admin-list" class="admin-list"></div>
+    </section>
+  </main>
+
+  <!-- نافذة إضافة / تعديل متجر -->
+  <dialog id="editor" class="modal admin-editor">
+    <form id="editor-form" novalidate>
+      <div class="modal-head">
+        <h3 id="editor-title" class="modal-title">إضافة متجر</h3>
+        <button class="modal-close" type="button" data-close aria-label="إغلاق">✕</button>
+      </div>
+
+      <div class="form-grid">
+        <label class="fld">اسم المتجر *
+          <input id="f-name" class="input" type="text" maxlength="60" required />
+        </label>
+        <label class="fld">الترتيب (رقم أصغر يظهر أولاً)
+          <input id="f-order" class="input" type="number" min="1" step="1" />
+        </label>
+        <label class="fld">رابط المتجر
+          <input id="f-url" class="input" type="url" dir="ltr" placeholder="https://www.example.com" />
+        </label>
+        <label class="fld">رابط الشعار
+          <span class="fld-inline">
+            <input id="f-logo" class="input" type="url" dir="ltr" placeholder="https://..." />
+            <img id="logo-preview" class="logo-preview" alt="" />
+          </span>
+          <button id="auto-logo" class="link-btn" type="button">جلب الشعار تلقائياً من رابط المتجر</button>
+        </label>
+        <label class="fld">القسم (عربي)
+          <input id="f-category" class="input" type="text" list="categories" />
+          <datalist id="categories"></datalist>
+        </label>
+        <label class="fld">القسم (English)
+          <input id="f-category-en" class="input" type="text" dir="ltr" />
+        </label>
+        <label class="fld span-2">نص المقدمة (اختياري، يُستخدم نص افتراضي إذا تُرك فارغاً)
+          <textarea id="f-intro" class="input" rows="2"></textarea>
+        </label>
+        <label class="fld span-2">نص المقدمة (English)
+          <textarea id="f-intro-en" class="input" rows="2" dir="ltr"></textarea>
+        </label>
+      </div>
+
+      <h4 class="admin-section">جدول كيفية الطلب</h4>
+      <p class="admin-muted small">"القيمة للنسخ" تظهر بجانبها زر نسخ للزبون (مثل العنوان والرقم). "الشرح" نص توضيحي بدون نسخ.</p>
+      <div id="fields-list" class="rep-list"></div>
+      <button id="add-field" class="btn btn-ghost btn-sm" type="button">+ إضافة صف</button>
+
+      <h4 class="admin-section">الملاحظات</h4>
+      <div id="notes-list" class="rep-list"></div>
+      <button id="add-note" class="btn btn-ghost btn-sm" type="button">+ إضافة ملاحظة</button>
+
+      <p id="editor-error" class="admin-error hidden"></p>
+
+      <div class="modal-actions">
+        <button id="save-btn" class="btn btn-orange" type="submit">حفظ</button>
+        <button class="btn btn-ghost" type="button" data-close>إلغاء</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- نافذة المشرفين -->
+  <dialog id="admins-dialog" class="modal">
+    <div class="modal-head">
+      <h3 class="modal-title">المشرفين</h3>
+      <button class="modal-close" type="button" data-close aria-label="إغلاق">✕</button>
+    </div>
+    <p class="admin-muted small" style="margin:8px 0 14px">
+      المشرف يقدر يعدّل عناوين الشحن ويضيف أو يحذف مشرفين. لازم يسجّل دخول بحساب Google بنفس الإيميل.
+    </p>
+
+    <form id="add-admin-form" class="fld-inline" novalidate>
+      <input id="new-admin-email" class="input" type="email" dir="ltr" placeholder="name@gmail.com" autocomplete="off" />
+      <button class="btn btn-orange" type="submit">إضافة</button>
+    </form>
+    <p id="admin-email-error" class="admin-error hidden"></p>
+
+    <div id="admins-list" class="admin-list" style="margin-top:16px"></div>
+  </dialog>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script type="module" src="js/site.js"></script>
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>
