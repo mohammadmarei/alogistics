@@ -134,6 +134,8 @@ function renderOrder(order) {
   badge.textContent = translateStatus(order.status);
   badge.className = "badge " + statusKey + (branch ? " attention" : "");
   document.getElementById("branch-notice").classList.toggle("hidden", !branch);
+  document.getElementById("branch-ref").classList.toggle("hidden", !order.reference);
+  document.getElementById("branch-ref-value").textContent = order.reference || "";
 
   // [مفتاح العنوان, القيمة]
   const details = [

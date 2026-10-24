@@ -891,6 +891,16 @@ img { max-width: 100%; display: block; }
 .branch-notice-icon { font-size: 1.4rem; line-height: 1; }
 .branch-notice strong { color: var(--warning); display: block; margin-bottom: 2px; }
 .branch-notice p { color: var(--text-soft); font-size: 0.9rem; margin-bottom: 10px; }
+.branch-notice .branch-ref { font-weight: 700; color: var(--heading); margin-bottom: 6px; }
+.branch-ref code {
+  direction: ltr;
+  display: inline-block;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 1px 8px;
+  font-size: 0.95rem;
+}
 
 .order-details {
   display: grid;

@@ -99,8 +99,9 @@ const DICT = {
     "error.text": "تعذّر عرض حالة الطلب هنا، اضغط الزر لفتح صفحة التتبع الرسمية مع رقمك مباشرة.",
     "error.button": "افتح صفحة التتبع ↗",
 
-    "branch.title": "يرجى مراجعة الفرع",
-    "branch.text": "طردك مؤجل أو مرتجع أو متوقف حالياً. يرجى مراجعة فرعنا في نابلس (يومياً 9 صباحاً – 3:30 مساءً) أو التواصل معنا لمتابعة الطلب.",
+    "branch.title": "يرجى مراجعة المرجع للفرع",
+    "branch.ref": "رقم المرجع:",
+    "branch.text": "طردك مؤجل أو مرتجع أو متوقف حالياً. يرجى مراجعة فرعنا في نابلس برقم المرجع (يومياً 9 صباحاً – 3:30 مساءً) أو التواصل معنا لمتابعة الطلب.",
     "branch.button": "تواصل مع الفرع على واتساب",
 
     "step.received": "تم استلام الطلب",
@@ -218,8 +219,9 @@ const DICT = {
     "error.text": "We couldn't show the order status here. Tap the button to open the official tracking page with your number.",
     "error.button": "Open tracking page ↗",
 
-    "branch.title": "Please contact the branch",
-    "branch.text": "Your parcel is postponed, returned or on hold. Please visit our Nablus branch (daily 9 AM – 3:30 PM) or contact us to follow up.",
+    "branch.title": "Please take your reference to the branch",
+    "branch.ref": "Reference number:",
+    "branch.text": "Your parcel is postponed, returned or on hold. Please visit our Nablus branch with your reference number (daily 9 AM – 3:30 PM) or contact us to follow up.",
     "branch.button": "Contact the branch on WhatsApp",
 
     "step.received": "Order received",
