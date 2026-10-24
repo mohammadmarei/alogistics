@@ -591,12 +591,87 @@ async function saveAd(id, data, message) {
   await loadAds();
 }
 
+/* صورة الإعلان: من الجهاز (تُصغَّر وتُحفظ داخل الإعلان نفسه في Firestore) أو برابط */
+const MAX_IMAGE_WIDTH = 1400;
+const MAX_IMAGE_CHARS = 700_000; // حد مستند Firestore هو 1MB، فنترك مساحة لباقي البيانات
+let adImageData = ""; // الصورة المرفوعة من الجهاز (data URL)
+
+function currentAdImage() {
+  return adImageData || $("a-image").value.trim();
+}
+
 function updateAdPreview() {
-  const src = $("a-image").value.trim();
+  const src = currentAdImage();
   $("ad-image-preview").src = src;
   $("ad-image-preview").classList.toggle("hidden", !src);
+  $("a-image-clear").classList.toggle("hidden", !src);
+  $("a-image").classList.toggle("hidden", !!adImageData);
+  $("a-image-status").textContent = adImageData
+    ? `صورة من الجهاز (${Math.round((adImageData.length * 0.75) / 1024)} KB)`
+    : "";
 }
+
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("الملف ليس صورة صالحة"));
+    };
+    img.src = url;
+  });
+}
+
+// نصغّر الصورة ونضغطها حتى تصير أصغر من الحد المسموح
+async function compressImage(file) {
+  const img = await loadImage(file);
+  let width = Math.min(img.naturalWidth, MAX_IMAGE_WIDTH);
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const height = Math.round((img.naturalHeight * width) / img.naturalWidth);
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff"; // خلفية بيضاء للصور الشفافة (JPEG لا يدعم الشفافية)
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0, width, height);
+    for (const quality of [0.85, 0.7, 0.55]) {
+      const data = canvas.toDataURL("image/jpeg", quality);
+      if (data.length <= MAX_IMAGE_CHARS) return data;
+    }
+    width = Math.round(width * 0.75);
+  }
+  throw new Error("الصورة كبيرة جداً، جرّب صورة أصغر.");
+}
+
 $("a-image").addEventListener("input", updateAdPreview);
+
+$("a-image-file").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  $("ad-editor-error").classList.add("hidden");
+  $("a-image-status").textContent = "جاري تجهيز الصورة...";
+  try {
+    adImageData = await compressImage(file);
+    $("a-image").value = "";
+  } catch (err) {
+    $("ad-editor-error").textContent = err.message;
+    $("ad-editor-error").classList.remove("hidden");
+  }
+  updateAdPreview();
+});
+
+$("a-image-clear").addEventListener("click", () => {
+  adImageData = "";
+  $("a-image").value = "";
+  updateAdPreview();
+});
 
 const AD_FIELDS = {
   "a-badge": "badge",
@@ -605,7 +680,6 @@ const AD_FIELDS = {
   "a-title-en": "title_en",
   "a-text": "text",
   "a-text-en": "text_en",
-  "a-image": "imageUrl",
   "a-link": "link",
   "a-link-label": "linkLabel",
   "a-link-label-en": "linkLabel_en",
@@ -618,6 +692,9 @@ function openAdEditor(ad) {
   Object.entries(AD_FIELDS).forEach(([inputId, key]) => ($(inputId).value = ad?.[key] || ""));
   $("a-order").value = ad?.order ?? ads.length + 1;
   $("a-active").checked = ad ? ad.active !== false : true;
+  const image = ad?.imageUrl || "";
+  adImageData = image.startsWith("data:") ? image : "";
+  $("a-image").value = adImageData ? "" : image;
   updateAdPreview();
   adEditor.showModal();
   $("a-title").focus();
@@ -632,11 +709,12 @@ $("ad-form").addEventListener("submit", async (e) => {
   const order = parseInt($("a-order").value, 10);
   data.order = Number.isFinite(order) ? order : ads.length + 1;
   data.active = $("a-active").checked;
+  data.imageUrl = currentAdImage();
 
   const isUrl = (u) => !u || /^https?:\/\//i.test(u);
   let problem = "";
-  if (!data.title && !data.title_en && !data.imageUrl) problem = "اكتب عنوان للإعلان أو ضع رابط صورة.";
-  else if (!isUrl(data.imageUrl)) problem = "رابط الصورة لازم يبدأ بـ https://";
+  if (!data.title && !data.title_en && !data.imageUrl) problem = "اكتب عنوان للإعلان أو أضف صورة.";
+  else if (!adImageData && !isUrl(data.imageUrl)) problem = "رابط الصورة لازم يبدأ بـ https://";
   else if (!isUrl(data.link)) problem = "رابط الزر لازم يبدأ بـ https://";
   if (problem) {
     $("ad-editor-error").textContent = problem;

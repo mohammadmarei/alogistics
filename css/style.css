@@ -1154,6 +1154,15 @@ img { max-width: 100%; display: block; }
   flex-shrink: 0;
 }
 .admin-row.inactive { opacity: 0.55; }
+.file-btn { cursor: pointer; }
+.ad-preview {
+  height: 56px;
+  max-width: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  margin-inline-start: auto;
+}
 .fld-check { flex-direction: row; align-items: center; gap: 8px; cursor: pointer; }
 .fld-check input { width: 18px; height: 18px; accent-color: var(--orange); }
 

@@ -202,12 +202,17 @@
         <label class="fld">النص (English)
           <textarea id="a-text-en" class="input" rows="3" maxlength="600" dir="ltr"></textarea>
         </label>
-        <label class="fld span-2">رابط الصورة (اختياري — إعلان بصورة فقط بدون عنوان يظهر كبوستر كامل)
+        <div class="fld span-2">الصورة (اختياري — إعلان بصورة فقط بدون عنوان يظهر كبوستر كامل)
           <span class="fld-inline">
-            <input id="a-image" class="input" type="url" dir="ltr" placeholder="https://..." />
-            <img id="ad-image-preview" class="logo-preview hidden" alt="" />
+            <label class="btn btn-ghost btn-sm file-btn">📷 اختر صورة من الجهاز
+              <input id="a-image-file" type="file" accept="image/*" hidden />
+            </label>
+            <button id="a-image-clear" class="btn btn-ghost btn-sm btn-danger hidden" type="button">إزالة الصورة</button>
+            <img id="ad-image-preview" class="ad-preview hidden" alt="" />
           </span>
-        </label>
+          <input id="a-image" class="input" type="url" dir="ltr" placeholder="أو الصق رابط صورة https://..." />
+          <span id="a-image-status" class="admin-muted small"></span>
+        </div>
         <label class="fld span-2">رابط الزر (اختياري — واتساب الوسيط، صفحة العرض...)
           <input id="a-link" class="input" type="url" dir="ltr" placeholder="https://wa.me/972..." />
         </label>
