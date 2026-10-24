@@ -360,6 +360,125 @@ img { max-width: 100%; display: block; }
 }
 
 /* =========================================================
+   الإعلانات والعروض (بين الواجهة و"لماذا تختارنا")
+   ========================================================= */
+.offers { padding: 8px 0 40px; }
+
+.offers-slider {
+  position: relative;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+/* كل الإعلانات فوق بعض، والظاهر فقط النشط */
+.offers-track {
+  display: grid;
+  touch-action: pan-y;
+}
+.offer-slide {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  min-height: 300px;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  color: #fff;
+  border-radius: var(--radius);
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s, visibility 0.5s;
+}
+.offer-slide.active { opacity: 1; visibility: visible; }
+
+.offer-body {
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.offer-badge {
+  background: var(--orange);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 3px 12px;
+  border-radius: 999px;
+}
+.offer-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.offer-text {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+.offer-body .btn { margin-top: 6px; }
+
+.offer-media {
+  display: block;
+  height: 100%;
+  min-height: 200px;
+}
+.offer-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* إعلان صورة فقط (بوستر): الصورة كاملة بدون قص */
+.offer-slide.image-only { background: var(--beige); }
+.offer-slide.image-only .offer-media img { object-fit: contain; max-height: 420px; }
+
+@media (min-width: 768px) {
+  .offer-slide { grid-template-columns: 1.1fr 1fr; min-height: 340px; }
+  .offer-slide.image-only { grid-template-columns: 1fr; }
+  .offer-body { padding: 40px 48px; }
+  .offer-title { font-size: 2.2rem; }
+}
+
+.offers-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--navy);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+.offers-nav:hover { background: #fff; color: var(--orange); }
+.offers-nav.prev { inset-inline-start: 10px; }
+.offers-nav.next { inset-inline-end: 10px; }
+[dir="rtl"] .offers-nav { transform: translateY(-50%) scaleX(-1); }
+
+.offers-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+.offers-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: none;
+  background: var(--line-strong);
+  cursor: pointer;
+  transition: width 0.25s, background 0.25s;
+}
+.offers-dot.active { width: 22px; background: var(--orange); }
+
+/* =========================================================
    الأقسام
    ========================================================= */
 .section { padding: 56px 0; }
@@ -465,18 +584,6 @@ img { max-width: 100%; display: block; }
 /* =========================================================
    المتاجر
    ========================================================= */
-.filters {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: 740px;
-  margin: 0 auto 32px;
-}
-@media (min-width: 600px) {
-  .filters { flex-direction: row; }
-  .filters .input:first-child { flex: 2; }
-  .filters .input:last-child { flex: 1; }
-}
 
 .stores-page { background: var(--beige); }
 
@@ -767,7 +874,23 @@ img { max-width: 100%; display: block; }
 }
 .badge.delivered { background: var(--success); }
 .badge.cancelled { background: var(--danger); }
-.badge.returned { background: var(--warning); }
+.badge.returned,
+.badge.attention { background: var(--warning); }
+
+/* تنبيه مراجعة الفرع (طرد مؤجل / مرتجع / عالق) */
+.branch-notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: rgba(194, 124, 14, 0.1);
+  border: 1px solid rgba(194, 124, 14, 0.35);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.branch-notice-icon { font-size: 1.4rem; line-height: 1; }
+.branch-notice strong { color: var(--warning); display: block; margin-bottom: 2px; }
+.branch-notice p { color: var(--text-soft); font-size: 0.9rem; margin-bottom: 10px; }
 
 .order-details {
   display: grid;
@@ -986,6 +1109,43 @@ img { max-width: 100%; display: block; }
 }
 .admin-toolbar h1 { font-size: 1.6rem; font-weight: 800; color: var(--heading); }
 .admin-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 22px;
+}
+.admin-tab {
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 10px 14px;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+.admin-tab:hover { color: var(--heading); }
+.admin-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+.admin-tabs-end { margin-inline-start: auto; margin-bottom: 6px; }
+
+/* معاينة الإعلان في قائمة الأدمن */
+.ad-thumb {
+  width: 64px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--navy);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.admin-row.inactive { opacity: 0.55; }
+.fld-check { flex-direction: row; align-items: center; gap: 8px; cursor: pointer; }
+.fld-check input { width: 18px; height: 18px; accent-color: var(--orange); }
 
 .admin-list { display: flex; flex-direction: column; gap: 10px; }
 .admin-row {

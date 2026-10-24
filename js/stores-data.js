@@ -69,6 +69,7 @@ export const STORES = [
     fields: [
       firstName,
       lastNameElg,
+      { label: "Phone Number", value: "0529091314" },
       { label: "Address Line 1", value: "DLV Aba Berdichev 2 (logistics)" },
       { label: "Flat/Location", value: "French Hill/Perfect Laundry Store" },
       { label: "City", value: CITY },

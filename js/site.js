@@ -27,6 +27,11 @@ const DICT = {
     "track.placeholder": "أدخل رقم التتبع",
     "track.button": "تتبع الآن",
 
+    "offers.label": "العروض والوسطاء",
+    "offers.prev": "السابق",
+    "offers.next": "التالي",
+    "offers.more": "اعرف أكثر",
+
     "why.title": "لماذا تختارنا",
     "why.license.title": "بريد قانوني ومرخّص",
     "why.license.text": "مرخّص من الجهات الفلسطينية ذات العلاقة",
@@ -69,8 +74,6 @@ const DICT = {
 
     "stores.title": 'كيف تطلب من <span class="accent">المواقع العالمية</span>',
     "stores.subtitle": 'حدّد المتجر الذي تود الشراء منه واضغط على "كيفية الطلب" للحصول على تعليمات خطوة بخطوة.',
-    "stores.search": "ابحث باسم المتجر...",
-    "stores.allCategories": "كل الأقسام",
     "stores.howButton": "كيفية الطلب",
     "stores.modalTitle": "كيفية الطلب — {name}",
     "stores.intro": "قم بالدخول إلى متجر {name} وبعد إضافة المنتجات للسلة وعند إتمام الطلب قم بإضافة البيانات كما هو موضح في الجدول التالي.",
@@ -79,7 +82,7 @@ const DICT = {
     "stores.shop": "تسوّق الآن",
     "stores.sendTracking": "أرسل رقم التتبع على واتساب",
     "stores.emptyTitle": "لا توجد متاجر",
-    "stores.emptyText": "لم نجد متجراً يطابق بحثك، جرّب اسماً آخر.",
+    "stores.emptyText": "لا توجد عناوين شحن حالياً، تواصل معنا عبر واتساب.",
     "stores.copy": "نسخ",
     "stores.copied": "تم النسخ",
     "stores.close": "إغلاق",
@@ -95,6 +98,10 @@ const DICT = {
     "error.title": "تابع طلبك من صفحة التتبع",
     "error.text": "تعذّر عرض حالة الطلب هنا، اضغط الزر لفتح صفحة التتبع الرسمية مع رقمك مباشرة.",
     "error.button": "افتح صفحة التتبع ↗",
+
+    "branch.title": "يرجى مراجعة الفرع",
+    "branch.text": "طردك مؤجل أو مرتجع أو متوقف حالياً. يرجى مراجعة فرعنا في نابلس (يومياً 9 صباحاً – 3:30 مساءً) أو التواصل معنا لمتابعة الطلب.",
+    "branch.button": "تواصل مع الفرع على واتساب",
 
     "step.received": "تم استلام الطلب",
     "step.preparing": "قيد التجهيز",
@@ -139,6 +146,11 @@ const DICT = {
     "track.placeholder": "Enter tracking number",
     "track.button": "Track now",
 
+    "offers.label": "Offers & partners",
+    "offers.prev": "Previous",
+    "offers.next": "Next",
+    "offers.more": "Learn more",
+
     "why.title": "Why choose us",
     "why.license.title": "Licensed & legal postal service",
     "why.license.text": "Licensed by the relevant Palestinian authorities",
@@ -181,8 +193,6 @@ const DICT = {
 
     "stores.title": 'How to order from <span class="accent">global stores</span>',
     "stores.subtitle": 'Pick the store you want to buy from and tap "How to order" for step-by-step instructions.',
-    "stores.search": "Search by store name...",
-    "stores.allCategories": "All categories",
     "stores.howButton": "How to order",
     "stores.modalTitle": "How to order — {name}",
     "stores.intro": "Go to {name}, add your products to the cart, and at checkout enter the details exactly as shown in the table below.",
@@ -191,7 +201,7 @@ const DICT = {
     "stores.shop": "Shop now",
     "stores.sendTracking": "Send tracking number on WhatsApp",
     "stores.emptyTitle": "No stores found",
-    "stores.emptyText": "No store matches your search, try another name.",
+    "stores.emptyText": "No shipping addresses right now, contact us on WhatsApp.",
     "stores.copy": "Copy",
     "stores.copied": "Copied",
     "stores.close": "Close",
@@ -207,6 +217,10 @@ const DICT = {
     "error.title": "Track your order on the tracking page",
     "error.text": "We couldn't show the order status here. Tap the button to open the official tracking page with your number.",
     "error.button": "Open tracking page ↗",
+
+    "branch.title": "Please contact the branch",
+    "branch.text": "Your parcel is postponed, returned or on hold. Please visit our Nablus branch (daily 9 AM – 3:30 PM) or contact us to follow up.",
+    "branch.button": "Contact the branch on WhatsApp",
 
     "step.received": "Order received",
     "step.preparing": "Preparing",

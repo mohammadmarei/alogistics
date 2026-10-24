@@ -81,6 +81,18 @@
       </div>
     </section>
 
+    <!-- ===== الإعلانات والعروض (يديرها الأدمن، ويختفي القسم إذا لا يوجد إعلانات) ===== -->
+    <section id="offers" class="offers hidden" aria-label="العروض" data-i18n-aria="offers.label">
+      <div class="container">
+        <div class="offers-slider">
+          <div id="offers-track" class="offers-track"></div>
+          <button id="offers-prev" class="offers-nav prev hidden" type="button" aria-label="السابق" data-i18n-aria="offers.prev">‹</button>
+          <button id="offers-next" class="offers-nav next hidden" type="button" aria-label="التالي" data-i18n-aria="offers.next">›</button>
+        </div>
+        <div id="offers-dots" class="offers-dots"></div>
+      </div>
+    </section>
+
     <!-- ===== لماذا تختارنا ===== -->
     <div class="container">
       <section class="band section" id="why">
@@ -203,5 +215,6 @@
 
   <script type="module" src="js/site.js"></script>
   <script type="module" src="js/stores.js"></script>
+  <script type="module" src="js/offers.js"></script>
 </body>
 </html>

@@ -6,8 +6,6 @@ import { t, getLang } from "./site.js";
 const WHATSAPP = "https://wa.me/972502527344";
 
 const grid = document.getElementById("stores-grid");
-const searchInput = document.getElementById("store-search");
-const categorySelect = document.getElementById("category-filter");
 
 // الصفحة الرئيسية تعرض عدداً محدوداً فقط (data-limit في HTML)
 const maxItems = Number(grid?.dataset.limit) || 0;
@@ -200,34 +198,6 @@ function render(stores) {
   list.forEach((s) => grid.appendChild(createStoreCard(s)));
 }
 
-// قيمة كل خيار هي اسم القسم بالعربي، والنص الظاهر مترجم
-function fillCategories() {
-  if (!categorySelect) return;
-  const current = categorySelect.value;
-  categorySelect.querySelectorAll("option:not([value=''])").forEach((o) => o.remove());
-
-  const catEn = new Map();
-  allStores.forEach((s) => {
-    const c = (s.category || "").trim();
-    if (c && !catEn.get(c)) catEn.set(c, s.category_en || "");
-  });
-  const cats = [...catEn.keys()].sort((a, b) => tr(a, catEn.get(a)).localeCompare(tr(b, catEn.get(b)), getLang()));
-  cats.forEach((c) => categorySelect.appendChild(Object.assign(el("option", "", tr(c, catEn.get(c))), { value: c })));
-  categorySelect.value = cats.includes(current) ? current : "";
-}
-
-function applyFilters() {
-  const term = (searchInput?.value || "").trim().toLowerCase();
-  const cat = categorySelect?.value || "";
-  render(
-    allStores.filter((s) => {
-      const matchCat = !cat || (s.category || "").trim() === cat;
-      const matchTerm = !term || (s.name || "").toLowerCase().includes(term);
-      return matchCat && matchTerm;
-    })
-  );
-}
-
 // المتاجر من Firestore (يديرها الأدمن). إذا كانت المجموعة فارغة أو تعذّر الاتصال
 // نعرض المتاجر الافتراضية الموجودة في stores-data.js
 async function loadStores() {
@@ -242,19 +212,15 @@ async function loadStores() {
       console.warn("تعذّر تحميل المتاجر من Firestore:", err.message);
     }
   }
-  fillCategories();
-  applyFilters();
+  render(allStores);
 }
 
 if (grid) {
-  searchInput?.addEventListener("input", applyFilters);
-  categorySelect?.addEventListener("change", applyFilters);
   loadStores();
 
   // عند تغيير اللغة نعيد رسم الكروت والنافذة المفتوحة
   document.addEventListener("langchange", () => {
-    fillCategories();
-    applyFilters();
+    render(allStores);
     if (modal.open && currentStore) fillModal(currentStore);
   });
 }

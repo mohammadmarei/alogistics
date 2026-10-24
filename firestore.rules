@@ -23,6 +23,16 @@ service cloud.firestore {
         && (!('notes' in d) || (d.notes is list && d.notes.size() <= 20));
     }
 
+    // فحص بسيط لشكل بيانات الإعلان قبل الحفظ
+    function validAd() {
+      let d = request.resource.data;
+      return (!('title' in d) || (d.title is string && d.title.size() <= 120))
+        && (!('title_en' in d) || (d.title_en is string && d.title_en.size() <= 120))
+        && (!('text' in d) || (d.text is string && d.text.size() <= 600))
+        && (!('text_en' in d) || (d.text_en is string && d.text_en.size() <= 600))
+        && (!('active' in d) || d.active is bool);
+    }
+
     // المشرفون الإضافيون: رقم المستند = الإيميل. الأدمن فقط يقرأ ويضيف ويحذف
     match /admins/{email} {
       allow read: if isAdmin();
@@ -38,6 +48,13 @@ service cloud.firestore {
     match /stores/{storeId} {
       allow read: if true;
       allow create, update: if isAdmin() && validStore();
+      allow delete: if isAdmin();
+    }
+
+    // الإعلانات والعروض في الصفحة الرئيسية: قراءة للجميع، والتعديل للأدمن فقط
+    match /ads/{adId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && validAd();
       allow delete: if isAdmin();
     }
 

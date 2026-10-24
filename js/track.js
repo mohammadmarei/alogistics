@@ -35,7 +35,7 @@ function setView(view) {
 // ترجمة حالات Olivery المعروفة للعربية (بالإنجليزي تظهر كما هي)
 const OLIVERY_AR = {
   "in branch": "في الفرع",
-  "waiting": "بانتظار الاستلام",
+  "waiting": "تم استلام الطلب",
   "picked up": "تم الاستلام من المتجر",
   "picked": "تم الاستلام من المتجر",
   "out for delivery": "مع المندوب",
@@ -48,11 +48,24 @@ const OLIVERY_AR = {
   "canceled": "ملغي",
   "rejected": "مرفوض",
   "returned": "مرتجع",
+  "stuck": "عالق",
+  "on hold": "متوقف",
+};
+
+// حالات نعرضها بالإنجليزي بنص مختلف عن نص Olivery
+const OLIVERY_EN = {
+  "waiting": "Order received",
 };
 
 function translateStatus(text = "") {
-  if (getLang() === "en") return text;
-  return OLIVERY_AR[text.trim().toLowerCase()] || text;
+  const key = text.trim().toLowerCase();
+  if (getLang() === "en") return OLIVERY_EN[key] || text;
+  return OLIVERY_AR[key] || text;
+}
+
+// طرد مؤجل أو مرتجع أو عالق: نطلب من الزبون مراجعة الفرع
+function needsBranch(text = "") {
+  return /postpon|return|reject|stuck|hold|delay|مؤجل|مرتجع|راجع|مرفوض|عالق|متوقف/i.test(text);
 }
 
 // تحويل نص الحالة القادم من Olivery إلى إحدى مراحل الخط الزمني
@@ -116,9 +129,11 @@ function renderOrder(order) {
 
   document.getElementById("order-id").textContent = order.sequence;
 
+  const branch = needsBranch(order.status);
   const badge = document.getElementById("order-status");
   badge.textContent = translateStatus(order.status);
-  badge.className = "badge " + statusKey;
+  badge.className = "badge " + statusKey + (branch ? " attention" : "");
+  document.getElementById("branch-notice").classList.toggle("hidden", !branch);
 
   // [مفتاح العنوان, القيمة]
   const details = [

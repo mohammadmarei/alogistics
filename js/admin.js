@@ -1,4 +1,4 @@
-// لوحة الأدمن: إدارة عناوين الشحن (المتاجر) والمشرفين في Firestore.
+// لوحة الأدمن: إدارة عناوين الشحن (المتاجر) والإعلانات والمشرفين في Firestore.
 // الدخول بحساب Google، والكتابة مسموحة فقط للأدمن (القواعد في firestore.rules).
 import { app, db, OWNER_EMAILS, isConfigured } from "./firebase-config.js";
 import {
@@ -106,7 +106,7 @@ if (!isConfigured) {
       return show("denied");
     }
     show("dashboard");
-    await loadStores();
+    await Promise.all([loadStores(), loadAds()]);
   });
 }
 
@@ -119,6 +119,16 @@ async function isAdminEmail(email) {
     return false;
   }
 }
+
+/* ---------------------------------------------------------
+   التبويبات
+   --------------------------------------------------------- */
+document.querySelectorAll(".admin-tab").forEach((tab) =>
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".admin-tab").forEach((t) => t.classList.toggle("active", t === tab));
+    ["stores", "ads"].forEach((name) => $("tab-" + name).classList.toggle("hidden", name !== tab.dataset.tab));
+  })
+);
 
 /* ---------------------------------------------------------
    المشرفون
@@ -486,6 +496,163 @@ $("editor-form").addEventListener("submit", async (e) => {
   } catch (err) {
     $("editor-error").textContent = errorMessage(err);
     $("editor-error").classList.remove("hidden");
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = "حفظ";
+  }
+});
+
+/* ---------------------------------------------------------
+   الإعلانات والعروض (تظهر في الصفحة الرئيسية)
+   --------------------------------------------------------- */
+let ads = [];
+let editingAdId = null;
+const adEditor = $("ad-editor");
+adEditor.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => adEditor.close()));
+
+async function loadAds() {
+  $("ads-list").innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+  try {
+    const snap = await getDocs(collection(db, "ads"));
+    ads = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    renderAds();
+  } catch (err) {
+    $("ads-list").innerHTML = "";
+    $("ads-list").appendChild(el("p", "admin-error", errorMessage(err)));
+  }
+}
+
+function renderAds() {
+  const list = $("ads-list");
+  list.innerHTML = "";
+  const visible = ads.filter((a) => a.active !== false).length;
+  $("ads-count").textContent = ads.length ? `${ads.length} إعلان · ${visible} ظاهر` : "";
+
+  if (ads.length === 0) {
+    const box = el("div", "message");
+    box.appendChild(el("div", "emoji", "📣"));
+    box.appendChild(el("h3", "", "لا توجد إعلانات بعد"));
+    box.appendChild(el("p", "", 'قسم الإعلانات مخفي في الموقع حالياً. اضغط "إضافة إعلان" لإظهاره.'));
+    list.appendChild(box);
+    return;
+  }
+
+  ads.forEach((a) => {
+    const active = a.active !== false;
+    const row = el("div", "admin-row" + (active ? "" : " inactive"));
+
+    const thumb = el("img", "ad-thumb");
+    thumb.alt = "";
+    if (a.imageUrl) thumb.src = a.imageUrl;
+    thumb.onerror = () => thumb.removeAttribute("src");
+
+    const info = el("div", "admin-row-info");
+    info.appendChild(el("strong", "", a.title || a.title_en || "(إعلان بصورة فقط)"));
+    const meta = [a.badge, active ? "ظاهر" : "مخفي", `الترتيب ${a.order ?? "—"}`].filter(Boolean);
+    info.appendChild(el("span", "admin-muted small", meta.join(" · ")));
+
+    const actions = el("div", "admin-row-actions");
+    const toggle = el("button", "btn btn-ghost btn-sm", active ? "إخفاء" : "إظهار");
+    toggle.type = "button";
+    toggle.addEventListener("click", () =>
+      saveAd(a.id, { ...a, active: !active }, active ? "تم إخفاء الإعلان" : "تم إظهار الإعلان").catch((err) =>
+        alert(errorMessage(err))
+      )
+    );
+    const edit = el("button", "btn btn-ghost btn-sm", "تعديل");
+    edit.type = "button";
+    edit.addEventListener("click", () => openAdEditor(a));
+    const del = el("button", "btn btn-ghost btn-sm btn-danger", "حذف");
+    del.type = "button";
+    del.addEventListener("click", () => removeAd(a));
+    actions.append(toggle, edit, del);
+
+    row.append(thumb, info, actions);
+    list.appendChild(row);
+  });
+}
+
+async function removeAd(ad) {
+  if (!confirm(`حذف الإعلان "${ad.title || ad.title_en || "بصورة فقط"}" نهائياً؟`)) return;
+  try {
+    await deleteDoc(doc(db, "ads", ad.id));
+    toast("تم حذف الإعلان");
+    await loadAds();
+  } catch (err) {
+    alert(errorMessage(err));
+  }
+}
+
+// يحفظ الإعلان (بدون id وupdatedAt القديمين) ثم يعيد تحميل القائمة
+async function saveAd(id, data, message) {
+  const { id: _id, updatedAt: _u, ...clean } = data;
+  await setDoc(doc(db, "ads", id), { ...clean, updatedAt: serverTimestamp() });
+  toast(message);
+  await loadAds();
+}
+
+function updateAdPreview() {
+  const src = $("a-image").value.trim();
+  $("ad-image-preview").src = src;
+  $("ad-image-preview").classList.toggle("hidden", !src);
+}
+$("a-image").addEventListener("input", updateAdPreview);
+
+const AD_FIELDS = {
+  "a-badge": "badge",
+  "a-badge-en": "badge_en",
+  "a-title": "title",
+  "a-title-en": "title_en",
+  "a-text": "text",
+  "a-text-en": "text_en",
+  "a-image": "imageUrl",
+  "a-link": "link",
+  "a-link-label": "linkLabel",
+  "a-link-label-en": "linkLabel_en",
+};
+
+function openAdEditor(ad) {
+  editingAdId = ad?.id || null;
+  $("ad-editor-title").textContent = ad ? "تعديل الإعلان" : "إضافة إعلان";
+  $("ad-editor-error").classList.add("hidden");
+  Object.entries(AD_FIELDS).forEach(([inputId, key]) => ($(inputId).value = ad?.[key] || ""));
+  $("a-order").value = ad?.order ?? ads.length + 1;
+  $("a-active").checked = ad ? ad.active !== false : true;
+  updateAdPreview();
+  adEditor.showModal();
+  $("a-title").focus();
+}
+
+$("add-ad-btn").addEventListener("click", () => openAdEditor(null));
+
+$("ad-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = {};
+  Object.entries(AD_FIELDS).forEach(([inputId, key]) => (data[key] = $(inputId).value.trim()));
+  const order = parseInt($("a-order").value, 10);
+  data.order = Number.isFinite(order) ? order : ads.length + 1;
+  data.active = $("a-active").checked;
+
+  const isUrl = (u) => !u || /^https?:\/\//i.test(u);
+  let problem = "";
+  if (!data.title && !data.title_en && !data.imageUrl) problem = "اكتب عنوان للإعلان أو ضع رابط صورة.";
+  else if (!isUrl(data.imageUrl)) problem = "رابط الصورة لازم يبدأ بـ https://";
+  else if (!isUrl(data.link)) problem = "رابط الزر لازم يبدأ بـ https://";
+  if (problem) {
+    $("ad-editor-error").textContent = problem;
+    $("ad-editor-error").classList.remove("hidden");
+    return;
+  }
+
+  const saveBtn = $("ad-save-btn");
+  saveBtn.disabled = true;
+  saveBtn.textContent = "جاري الحفظ...";
+  try {
+    await saveAd(editingAdId || doc(collection(db, "ads")).id, data, editingAdId ? "تم حفظ الإعلان" : "تمت إضافة الإعلان");
+    adEditor.close();
+  } catch (err) {
+    $("ad-editor-error").textContent = errorMessage(err);
+    $("ad-editor-error").classList.remove("hidden");
   } finally {
     saveBtn.disabled = false;
     saveBtn.textContent = "حفظ";

@@ -73,18 +73,39 @@
 
     <!-- لوحة التحكم -->
     <section id="view-dashboard" class="hidden">
-      <div class="admin-toolbar">
-        <div>
-          <h1>عناوين الشحن</h1>
-          <p id="stores-count" class="admin-muted"></p>
-        </div>
-        <div class="admin-actions">
-          <button id="admins-btn" class="btn btn-ghost" type="button">👥 المشرفين</button>
-          <button id="import-btn" class="btn btn-ghost hidden" type="button">استيراد المتاجر الافتراضية</button>
-          <button id="add-btn" class="btn btn-orange" type="button">+ إضافة متجر</button>
-        </div>
+      <div class="admin-tabs">
+        <button class="admin-tab active" type="button" data-tab="stores">📦 عناوين الشحن</button>
+        <button class="admin-tab" type="button" data-tab="ads">📣 الإعلانات والعروض</button>
+        <button id="admins-btn" class="btn btn-ghost btn-sm admin-tabs-end" type="button">👥 المشرفين</button>
       </div>
-      <div id="admin-list" class="admin-list"></div>
+
+      <div id="tab-stores">
+        <div class="admin-toolbar">
+          <div>
+            <h1>عناوين الشحن</h1>
+            <p id="stores-count" class="admin-muted"></p>
+          </div>
+          <div class="admin-actions">
+            <button id="import-btn" class="btn btn-ghost hidden" type="button">استيراد المتاجر الافتراضية</button>
+            <button id="add-btn" class="btn btn-orange" type="button">+ إضافة متجر</button>
+          </div>
+        </div>
+        <div id="admin-list" class="admin-list"></div>
+      </div>
+
+      <div id="tab-ads" class="hidden">
+        <div class="admin-toolbar">
+          <div>
+            <h1>الإعلانات والعروض</h1>
+            <p class="admin-muted small">تظهر في الصفحة الرئيسية تحت مربع التتبع (الوسطاء، Black Friday، العروض الخاصة...).</p>
+            <p id="ads-count" class="admin-muted"></p>
+          </div>
+          <div class="admin-actions">
+            <button id="add-ad-btn" class="btn btn-orange" type="button">+ إضافة إعلان</button>
+          </div>
+        </div>
+        <div id="ads-list" class="admin-list"></div>
+      </div>
     </section>
   </main>
 
@@ -146,6 +167,67 @@
     </form>
   </dialog>
 
+  <!-- نافذة إضافة / تعديل إعلان -->
+  <dialog id="ad-editor" class="modal admin-editor">
+    <form id="ad-form" novalidate>
+      <div class="modal-head">
+        <h3 id="ad-editor-title" class="modal-title">إضافة إعلان</h3>
+        <button class="modal-close" type="button" data-close aria-label="إغلاق">✕</button>
+      </div>
+
+      <div class="form-grid">
+        <label class="fld fld-check span-2">
+          <input id="a-active" type="checkbox" checked />
+          <span>ظاهر في الموقع (أزل الإشارة لإخفاء الإعلان مؤقتاً بدون حذفه)</span>
+        </label>
+        <label class="fld">الترتيب (رقم أصغر يظهر أولاً)
+          <input id="a-order" class="input" type="number" min="1" step="1" />
+        </label>
+        <span></span>
+        <label class="fld">الشارة (عربي) — مثل: Black Friday أو وسيط معتمد
+          <input id="a-badge" class="input" type="text" maxlength="40" />
+        </label>
+        <label class="fld">الشارة (English)
+          <input id="a-badge-en" class="input" type="text" maxlength="40" dir="ltr" />
+        </label>
+        <label class="fld">العنوان (عربي)
+          <input id="a-title" class="input" type="text" maxlength="120" />
+        </label>
+        <label class="fld">العنوان (English)
+          <input id="a-title-en" class="input" type="text" maxlength="120" dir="ltr" />
+        </label>
+        <label class="fld">النص (عربي)
+          <textarea id="a-text" class="input" rows="3" maxlength="600"></textarea>
+        </label>
+        <label class="fld">النص (English)
+          <textarea id="a-text-en" class="input" rows="3" maxlength="600" dir="ltr"></textarea>
+        </label>
+        <label class="fld span-2">رابط الصورة (اختياري — إعلان بصورة فقط بدون عنوان يظهر كبوستر كامل)
+          <span class="fld-inline">
+            <input id="a-image" class="input" type="url" dir="ltr" placeholder="https://..." />
+            <img id="ad-image-preview" class="logo-preview hidden" alt="" />
+          </span>
+        </label>
+        <label class="fld span-2">رابط الزر (اختياري — واتساب الوسيط، صفحة العرض...)
+          <input id="a-link" class="input" type="url" dir="ltr" placeholder="https://wa.me/972..." />
+        </label>
+        <label class="fld">نص الزر (عربي) — الافتراضي: اعرف أكثر
+          <input id="a-link-label" class="input" type="text" maxlength="40" />
+        </label>
+        <label class="fld">نص الزر (English)
+          <input id="a-link-label-en" class="input" type="text" maxlength="40" dir="ltr" />
+        </label>
+      </div>
+
+      <p id="ad-editor-error" class="admin-error hidden"></p>
+
+      <div class="modal-actions">
+        <button id="ad-save-btn" class="btn btn-orange" type="submit">حفظ</button>
+        <button class="btn btn-ghost" type="button" data-close>إلغاء</button>
+      </div>
+    </form>
+  </dialog>
+
   <!-- نافذة المشرفين -->
   <dialog id="admins-dialog" class="modal">
     <div class="modal-head">
@@ -153,7 +235,7 @@
       <button class="modal-close" type="button" data-close aria-label="إغلاق">✕</button>
     </div>
     <p class="admin-muted small" style="margin:8px 0 14px">
-      المشرف يقدر يعدّل عناوين الشحن ويضيف أو يحذف مشرفين. لازم يسجّل دخول بحساب Google بنفس الإيميل.
+      المشرف يقدر يعدّل عناوين الشحن والإعلانات ويضيف أو يحذف مشرفين. لازم يسجّل دخول بحساب Google بنفس الإيميل.
     </p>
 
     <form id="add-admin-form" class="fld-inline" novalidate>
