@@ -4,7 +4,7 @@ service cloud.firestore {
 
     // الأدمن الأساسيون: ثابتون هنا ولا يمكن حذفهم من صفحة الأدمن
     function isOwner() {
-      return request.auth.token.email in ["logistipost@gmail.com", "mohammadmarei44@gmail.com"];
+      return request.auth.token.email in ["logistipost@gmail.com"];
     }
 
     // الأدمن: مسجّل دخول بإيميل موثّق (تسجيل الدخول بـ Google يوثّقه تلقائياً)،

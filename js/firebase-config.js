@@ -16,7 +16,7 @@ const firebaseConfig = {
 // الأدمن الأساسيون: ثابتون ولا يمكن حذفهم من صفحة الأدمن.
 // باقي المشرفين يُضافون ويُحذفون من صفحة الأدمن (مجموعة admins في Firestore).
 // إذا عدّلت القائمة هنا عدّلها أيضاً في firestore.rules (الحماية الحقيقية هناك).
-export const OWNER_EMAILS = ["logistipost@gmail.com", "mohammadmarei44@gmail.com"];
+export const OWNER_EMAILS = ["logistipost@gmail.com"];
 
 // هل تم لصق إعدادات Firebase؟
 export const isConfigured = !firebaseConfig.projectId.startsWith("PASTE");
